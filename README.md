@@ -10,9 +10,9 @@ This is not and never will be a fully fleshed out and high speed database and sh
 # What it can do
 - Create tables with the column-types String and Integer, can have key pairs
 - Insert data into a table
+- Remove data from a table
 
 # What it can not do yet
-- Remove data from a table
 - Do basic database operations (join, selection, projection)
 - Write and read from a file
 

@@ -5,7 +5,7 @@ use crate::values::Value;
 
 use std::collections::HashSet;
 
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Table<'a> {
     columns: &'a Vec<Column>,
     entries: Vec<Entry<'a>>
@@ -71,6 +71,19 @@ impl<'a> Table<'a> {
         self.entries.push(new_entry);
 
         Ok(())
+    }
+
+    pub fn remove(&mut self, keys: Vec<Value>) -> bool {
+        let key_columns = self.columns.iter().filter(|&c| c.is_key);
+        if keys.len() != key_columns.clone().collect::<Vec<&Column>>().len() {
+            return false;
+        }
+        let ziped = key_columns.zip(keys.into_iter());
+        let to_remove = Entry::new(ziped.collect());
+        let old_entries = self.entries.clone();
+        self.entries = self.entries.clone().into_iter().filter(|entry| !entry.key_eq(&to_remove)).collect();
+
+        return old_entries != self.entries;
     }
 }
 
@@ -140,5 +153,41 @@ mod test {
         assert!(table.insert(vec![crate::values::Value::Integer(10)]).is_err());
         assert!(table.insert(vec![crate::values::Value::Integer(12), crate::values::Value::String("World".to_string()), crate::values::Value::String("Hello".to_string())]).is_err());
         
+    }
+
+    #[test]
+    fn normal_remove() {
+        let column1 = super::Column::key("Test1", crate::types::ColumnType::Integer);
+        let column2 = super::Column::new("Test2", crate::types::ColumnType::String);
+        let columns = vec![column1, column2];
+
+        let mut table = super::Table::new(&columns).unwrap();
+
+        assert!(table.insert(vec![crate::values::Value::Integer(10), crate::values::Value::String("Hello".to_string())]).is_ok());
+        assert!(table.insert(vec![crate::values::Value::Integer(12), crate::values::Value::String("World".to_string())]).is_ok());
+
+        assert!(table.remove(vec![crate::values::Value::Integer(10)]));
+
+        assert_eq!(table.entries.len(), 1);
+        assert_eq!(table.entries[0].values.clone().into_iter().map(|v| v.1).collect::<Vec<crate::values::Value>>(), vec![crate::values::Value::Integer(12), crate::values::Value::String("World".to_string())]);
+    }
+
+    #[test]
+    fn unknown_remove() {
+        let column1 = super::Column::key("Test1", crate::types::ColumnType::Integer);
+        let column2 = super::Column::new("Test2", crate::types::ColumnType::String);
+        let columns = vec![column1, column2];
+
+        let mut table = super::Table::new(&columns).unwrap();
+
+        assert!(table.insert(vec![crate::values::Value::Integer(10), crate::values::Value::String("Hello".to_string())]).is_ok());
+        assert!(table.insert(vec![crate::values::Value::Integer(12), crate::values::Value::String("World".to_string())]).is_ok());
+        
+        let table_clone = table.clone();
+
+        assert!(!table.remove(vec![crate::values::Value::Integer(1)]));
+
+        assert_eq!(table, table_clone);
+
     }
 }
