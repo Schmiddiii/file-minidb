@@ -1,14 +1,14 @@
-
 use crate::column::Column;
 use crate::entry::Entry;
 use crate::values::Value;
 
 use std::collections::HashSet;
+use std::fmt;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Table<'a> {
     columns: &'a Vec<Column>,
-    entries: Vec<Entry<'a>>
+    entries: Vec<Entry<'a>>,
 }
 
 // impl<'a> fmt::Debug for Table<'a> {
@@ -20,18 +20,36 @@ pub struct Table<'a> {
 //     }
 // }
 
+impl<'a> fmt::Display for Table<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for c in self.columns {
+            write!(f, "| {:?}\t", (*c.name).as_ref()).unwrap();
+        }
+        writeln!(f, "|").unwrap();
+        for e in &self.entries {
+            writeln!(f, "{}", e).unwrap();
+        }
+
+        writeln!(f, "")
+    }
+}
+
 impl<'a> Table<'a> {
     /// Creates a new table. Returns an error if two columns have the same name.
     pub fn new(columns: &'a Vec<Column>) -> Result<Table<'a>, String> {
         let mut names = HashSet::new();
 
-        if columns.iter().map(|v| names.insert((*v.name).as_ref())).any(|v| !v) {
+        if columns
+            .iter()
+            .map(|v| names.insert((*v.name).as_ref()))
+            .any(|v| !v)
+        {
             return Err("At least two columns have the same name".to_string());
         }
 
         Ok(Table {
             columns: columns,
-            entries: vec![]
+            entries: vec![],
         })
     }
 
@@ -47,11 +65,13 @@ impl<'a> Table<'a> {
         // Check if types from new entry is equivalent to the columns of the table
         for (i, (v_type, c_type)) in values_type_iter.zip(columns_type_iter).enumerate() {
             if v_type != c_type {
-                let error_message = format!("Column types do not match in column: {}, expected: {:?}, got {:?}", i, c_type, v_type);
+                let error_message = format!(
+                    "Column types do not match in column: {}, expected: {:?}, got {:?}",
+                    i, c_type, v_type
+                );
                 return Err(error_message);
             }
         }
-
 
         // Create new Entry
         let values_iter = entry.into_iter();
@@ -66,7 +86,7 @@ impl<'a> Table<'a> {
                 return Err("Key already exists".to_string());
             }
         }
-        
+
         // Ok to insert
         self.entries.push(new_entry);
 
@@ -81,7 +101,12 @@ impl<'a> Table<'a> {
         let ziped = key_columns.zip(keys.into_iter());
         let to_remove = Entry::new(ziped.collect());
         let old_entries = self.entries.clone();
-        self.entries = self.entries.clone().into_iter().filter(|entry| !entry.key_eq(&to_remove)).collect();
+        self.entries = self
+            .entries
+            .clone()
+            .into_iter()
+            .filter(|entry| !entry.key_eq(&to_remove))
+            .collect();
 
         return old_entries != self.entries;
     }
@@ -114,10 +139,20 @@ mod test {
 
         let mut table = super::Table::new(&columns).unwrap();
 
-        assert!(table.insert(vec![crate::values::Value::Integer(10), crate::values::Value::String("Hello".to_string())]).is_ok());
-        assert!(table.insert(vec![crate::values::Value::Integer(12), crate::values::Value::String("World".to_string())]).is_ok());
+        assert!(table
+            .insert(vec![
+                crate::values::Value::Integer(10),
+                crate::values::Value::String("Hello".to_string())
+            ])
+            .is_ok());
+        assert!(table
+            .insert(vec![
+                crate::values::Value::Integer(12),
+                crate::values::Value::String("World".to_string())
+            ])
+            .is_ok());
     }
-    
+
     #[test]
     fn duplicate_insert() {
         let column1 = super::Column::key("Test1", crate::types::ColumnType::Integer);
@@ -126,8 +161,18 @@ mod test {
 
         let mut table = super::Table::new(&columns).unwrap();
 
-        assert!(table.insert(vec![crate::values::Value::Integer(10), crate::values::Value::String("Hello".to_string())]).is_ok());
-        assert!(table.insert(vec![crate::values::Value::Integer(10), crate::values::Value::String("World".to_string())]).is_err());
+        assert!(table
+            .insert(vec![
+                crate::values::Value::Integer(10),
+                crate::values::Value::String("Hello".to_string())
+            ])
+            .is_ok());
+        assert!(table
+            .insert(vec![
+                crate::values::Value::Integer(10),
+                crate::values::Value::String("World".to_string())
+            ])
+            .is_err());
     }
 
     #[test]
@@ -138,8 +183,18 @@ mod test {
 
         let mut table = super::Table::new(&columns).unwrap();
 
-        assert!(table.insert(vec![crate::values::Value::String("Hello".to_string()), crate::values::Value::Integer(10)]).is_err());
-        assert!(table.insert(vec![crate::values::Value::String("Bye".to_string()), crate::values::Value::String("World".to_string())]).is_err());
+        assert!(table
+            .insert(vec![
+                crate::values::Value::String("Hello".to_string()),
+                crate::values::Value::Integer(10)
+            ])
+            .is_err());
+        assert!(table
+            .insert(vec![
+                crate::values::Value::String("Bye".to_string()),
+                crate::values::Value::String("World".to_string())
+            ])
+            .is_err());
     }
 
     #[test]
@@ -150,9 +205,16 @@ mod test {
 
         let mut table = super::Table::new(&columns).unwrap();
 
-        assert!(table.insert(vec![crate::values::Value::Integer(10)]).is_err());
-        assert!(table.insert(vec![crate::values::Value::Integer(12), crate::values::Value::String("World".to_string()), crate::values::Value::String("Hello".to_string())]).is_err());
-        
+        assert!(table
+            .insert(vec![crate::values::Value::Integer(10)])
+            .is_err());
+        assert!(table
+            .insert(vec![
+                crate::values::Value::Integer(12),
+                crate::values::Value::String("World".to_string()),
+                crate::values::Value::String("Hello".to_string())
+            ])
+            .is_err());
     }
 
     #[test]
@@ -163,13 +225,34 @@ mod test {
 
         let mut table = super::Table::new(&columns).unwrap();
 
-        assert!(table.insert(vec![crate::values::Value::Integer(10), crate::values::Value::String("Hello".to_string())]).is_ok());
-        assert!(table.insert(vec![crate::values::Value::Integer(12), crate::values::Value::String("World".to_string())]).is_ok());
+        assert!(table
+            .insert(vec![
+                crate::values::Value::Integer(10),
+                crate::values::Value::String("Hello".to_string())
+            ])
+            .is_ok());
+        assert!(table
+            .insert(vec![
+                crate::values::Value::Integer(12),
+                crate::values::Value::String("World".to_string())
+            ])
+            .is_ok());
 
         assert!(table.remove(vec![crate::values::Value::Integer(10)]));
 
         assert_eq!(table.entries.len(), 1);
-        assert_eq!(table.entries[0].values.clone().into_iter().map(|v| v.1).collect::<Vec<crate::values::Value>>(), vec![crate::values::Value::Integer(12), crate::values::Value::String("World".to_string())]);
+        assert_eq!(
+            table.entries[0]
+                .values
+                .clone()
+                .into_iter()
+                .map(|v| v.1)
+                .collect::<Vec<crate::values::Value>>(),
+            vec![
+                crate::values::Value::Integer(12),
+                crate::values::Value::String("World".to_string())
+            ]
+        );
     }
 
     #[test]
@@ -180,14 +263,23 @@ mod test {
 
         let mut table = super::Table::new(&columns).unwrap();
 
-        assert!(table.insert(vec![crate::values::Value::Integer(10), crate::values::Value::String("Hello".to_string())]).is_ok());
-        assert!(table.insert(vec![crate::values::Value::Integer(12), crate::values::Value::String("World".to_string())]).is_ok());
-        
+        assert!(table
+            .insert(vec![
+                crate::values::Value::Integer(10),
+                crate::values::Value::String("Hello".to_string())
+            ])
+            .is_ok());
+        assert!(table
+            .insert(vec![
+                crate::values::Value::Integer(12),
+                crate::values::Value::String("World".to_string())
+            ])
+            .is_ok());
+
         let table_clone = table.clone();
 
         assert!(!table.remove(vec![crate::values::Value::Integer(1)]));
 
         assert_eq!(table, table_clone);
-
     }
 }

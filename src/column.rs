@@ -1,28 +1,29 @@
-
 use crate::types::ColumnType;
 use std::fmt;
 
 pub struct Column {
     pub(crate) is_key: bool,
     pub(crate) name: Box<dyn AsRef<str>>,
-    pub(crate) column_type: ColumnType
+    pub(crate) column_type: ColumnType,
 }
 
 impl fmt::Debug for Column {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Column")
-         .field("is_key", &self.is_key)
-         .field("name", &(*self.name).as_ref())
-         .field("column_type", &self.column_type)
-         .finish()
+            .field("is_key", &self.is_key)
+            .field("name", &(*self.name).as_ref())
+            .field("column_type", &self.column_type)
+            .finish()
     }
 }
 
 impl PartialEq for Column {
     fn eq(&self, other: &Self) -> bool {
-        return self.is_key == other.is_key && self.column_type == other.column_type && (*self.name).as_ref() == (*other.name).as_ref();
+        return self.is_key == other.is_key
+            && self.column_type == other.column_type
+            && (*self.name).as_ref() == (*other.name).as_ref();
     }
-} 
+}
 
 impl Eq for Column {}
 
@@ -31,7 +32,7 @@ impl Column {
         Column {
             is_key: false,
             name: Box::new(name.clone()),
-            column_type: column_type
+            column_type: column_type,
         }
     }
 
@@ -39,7 +40,7 @@ impl Column {
         Column {
             is_key: true,
             name: Box::new(name.clone()),
-            column_type: column_type
+            column_type: column_type,
         }
     }
 
@@ -73,7 +74,7 @@ mod tests {
 
         assert_ne!(column1, column2);
     }
-    
+
     #[test]
     fn type_nequal() {
         let column1 = super::Column::new("Test1", super::ColumnType::Integer);
