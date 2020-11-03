@@ -3,7 +3,6 @@ extern crate file_minidb;
 use file_minidb::column::Column;
 use file_minidb::table::Table;
 use file_minidb::types::ColumnType;
-use file_minidb::values::Value;
 
 pub fn main() {
     let column1 = Column::key("First Name", ColumnType::String);
@@ -13,14 +12,14 @@ pub fn main() {
 
     let mut table = Table::new(&columns).unwrap();
 
-    println!("{:?}", table);
+    println!("{}", table);
 
     // Valid
     assert!(table
         .insert(vec![
-            Value::String("Peter".to_string()),
-            Value::String("Pan".to_string()),
-            Value::Integer(15)
+            "Peter".into(),
+            "Pan".into(),
+            15.into()
         ])
         .is_ok());
 
@@ -29,45 +28,45 @@ pub fn main() {
 
     // Errors because table has two columns, but only one was given.
     assert!(table
-        .insert(vec![Value::String("Petra".to_string())])
+        .insert(vec!["Petra".into()])
         .is_err());
 
     // Errors because table String as second type but Integer was given
     assert!(table
         .insert(vec![
-            Value::String("Bill".to_string()),
-            Value::Integer(16),
-            Value::String("Jukes".to_string())
+            "Bill".into(),
+            16.into(),
+            "Jukes".into()
         ])
         .is_err());
 
     // Add some more
     assert!(table
         .insert(vec![
-            Value::String("Alf".to_string()),
-            Value::String("Mason".to_string()),
-            Value::Integer(25)
+            "Alf".into(),
+            "Mason".into(),
+            25.into()
         ])
         .is_ok());
     assert!(table
         .insert(vec![
-            Value::String("Robert".to_string()),
-            Value::String("Mullins".to_string()),
-            Value::Integer(35)
+            "Robert".into(),
+            "Mullins".into(),
+            35.into()
         ])
         .is_ok());
     assert!(table
         .insert(vec![
-            Value::String("Alan".to_string()),
-            Value::String("Herb".to_string()),
-            Value::Integer(37)
+            "Alan".into(),
+            "Herb".into(),
+            37.into()
         ])
         .is_ok());
     assert!(table
         .insert(vec![
-            Value::String("Canary".to_string()),
-            Value::String("Robb".to_string()),
-            Value::Integer(42)
+            "Canary".into(),
+            "Robb".into(),
+            42.into()
         ])
         .is_ok());
 
@@ -76,8 +75,8 @@ pub fn main() {
 
     // Remove item in table
     assert!(table.remove(vec![
-        Value::String("Alf".to_string()),
-        Value::String("Mason".to_string())
+        "Alf".into(),
+        "Mason".into()
     ]));
 
     println!("Removed item");
@@ -85,8 +84,8 @@ pub fn main() {
 
     // Remove non existant item
     assert!(!table.remove(vec![
-        Value::String("Mary".to_string()),
-        Value::String("Darling".to_string())
+        "Mary".into(),
+        "Darling".into()
     ]));
 
     println!("End table");
