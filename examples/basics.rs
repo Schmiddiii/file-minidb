@@ -16,78 +16,49 @@ pub fn main() {
 
     // Valid
     assert!(table
-        .insert(vec![
-            "Peter".into(),
-            "Pan".into(),
-            15.into()
-        ])
+        .insert(vec!["Peter".into(), "Pan".into(), 15.into()])
         .is_ok());
 
     println!("Empty table");
     println!("{}", table);
 
     // Errors because table has two columns, but only one was given.
-    assert!(table
-        .insert(vec!["Petra".into()])
-        .is_err());
+    assert!(table.insert(vec!["Petra".into()]).is_err());
 
     // Errors because table String as second type but Integer was given
     assert!(table
-        .insert(vec![
-            "Bill".into(),
-            16.into(),
-            "Jukes".into()
-        ])
+        .insert(vec!["Bill".into(), 16.into(), "Jukes".into()])
         .is_err());
 
     // Add some more
     assert!(table
-        .insert(vec![
-            "Alf".into(),
-            "Mason".into(),
-            25.into()
-        ])
+        .insert(vec!["Alf".into(), "Mason".into(), 25.into()])
         .is_ok());
     assert!(table
-        .insert(vec![
-            "Robert".into(),
-            "Mullins".into(),
-            35.into()
-        ])
+        .insert(vec!["Robert".into(), "Mullins".into(), 35.into()])
         .is_ok());
     assert!(table
-        .insert(vec![
-            "Alan".into(),
-            "Herb".into(),
-            37.into()
-        ])
+        .insert(vec!["Alan".into(), "Herb".into(), 37.into()])
         .is_ok());
     assert!(table
-        .insert(vec![
-            "Canary".into(),
-            "Robb".into(),
-            42.into()
-        ])
+        .insert(vec!["Canary".into(), "Robb".into(), 42.into()])
         .is_ok());
 
     println!("Filled table");
     println!("{}", table);
 
     // Remove item in table
-    assert!(table.remove(vec![
-        "Alf".into(),
-        "Mason".into()
-    ]));
+    assert!(table.remove(vec!["Alf".into(), "Mason".into()]));
 
     println!("Removed item");
     println!("{}", table);
 
     // Remove non existant item
-    assert!(!table.remove(vec![
-        "Mary".into(),
-        "Darling".into()
-    ]));
+    assert!(!table.remove(vec!["Mary".into(), "Darling".into()]));
 
     println!("End table");
     println!("{}", table);
+
+    println!("Serialized table");
+    println!("{}", table.serialize());
 }

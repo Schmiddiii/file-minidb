@@ -7,8 +7,8 @@ use std::fmt;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Table<'a> {
-    columns: &'a Vec<Column>,
-    entries: Vec<Entry<'a>>,
+    pub(crate) columns: &'a Vec<Column>,
+    pub(crate) entries: Vec<Entry<'a>>,
 }
 
 // impl<'a> fmt::Debug for Table<'a> {
