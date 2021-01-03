@@ -6,9 +6,9 @@ use std::collections::HashSet;
 use std::fmt;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Table<'a> {
-    pub(crate) columns: &'a Vec<Column>,
-    pub(crate) entries: Vec<Entry<'a>>,
+pub struct Table {
+    pub(crate) columns: Vec<Column>,
+    pub(crate) entries: Vec<Entry>,
 }
 
 // impl<'a> fmt::Debug for Table<'a> {
@@ -20,10 +20,10 @@ pub struct Table<'a> {
 //     }
 // }
 
-impl<'a> fmt::Display for Table<'a> {
+impl fmt::Display for Table {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for c in self.columns {
-            write!(f, "| {:?}\t", (*c.name).as_ref()).unwrap();
+        for c in &self.columns {
+            write!(f, "| {:?}\t", c.name).unwrap();
         }
         writeln!(f, "|").unwrap();
         for e in &self.entries {
@@ -34,14 +34,14 @@ impl<'a> fmt::Display for Table<'a> {
     }
 }
 
-impl<'a> Table<'a> {
+impl Table {
     /// Creates a new table. Returns an error if two columns have the same name.
-    pub fn new(columns: &'a Vec<Column>) -> Result<Table<'a>, String> {
+    pub fn new(columns: Vec<Column>) -> Result<Table, String> {
         let mut names = HashSet::new();
 
         if columns
             .iter()
-            .map(|v| names.insert((*v.name).as_ref()))
+            .map(|v| names.insert(&v.name))
             .any(|v| !v)
         {
             return Err("At least two columns have the same name".to_string());
@@ -75,10 +75,11 @@ impl<'a> Table<'a> {
 
         // Create new Entry
         let values_iter = entry.into_iter();
-        let columns_iter = self.columns.iter();
+        let columns_iter = self.columns.iter().cloned();
 
-        let zip_vec: Vec<(&Column, Value)> = columns_iter.zip(values_iter).collect();
-        let new_entry: Entry<'a> = Entry::new(zip_vec);
+        let zip_vec: Vec<(Column, Value)> = columns_iter.zip(values_iter).collect();
+        // let values = values_iter.enumerate().map(|(i, v)| (&self.columns[i], v)).collect();
+        let new_entry: Entry = Entry::new(zip_vec);
 
         // Check if key already exists
         for e in &self.entries {
@@ -94,8 +95,8 @@ impl<'a> Table<'a> {
     }
 
     pub fn remove(&mut self, keys: Vec<Value>) -> bool {
-        let key_columns = self.columns.iter().filter(|&c| c.is_key);
-        if keys.len() != key_columns.clone().collect::<Vec<&Column>>().len() {
+        let key_columns = self.columns.iter().cloned().filter(|c| c.is_key);
+        if keys.len() != key_columns.clone().collect::<Vec<Column>>().len() {
             return false;
         }
         let ziped = key_columns.zip(keys.into_iter());
@@ -120,7 +121,7 @@ mod test {
         let column1 = super::Column::new("Test1", crate::types::ColumnType::Integer);
         let column2 = super::Column::new("Test2", crate::types::ColumnType::String);
 
-        assert!(super::Table::new(&vec![column1, column2]).is_ok());
+        assert!(super::Table::new(vec![column1, column2]).is_ok());
     }
 
     #[test]
@@ -128,7 +129,7 @@ mod test {
         let column1 = super::Column::new("Test1", crate::types::ColumnType::Integer);
         let column2 = super::Column::new("Test1", crate::types::ColumnType::String);
 
-        assert!(super::Table::new(&vec![column1, column2]).is_err());
+        assert!(super::Table::new(vec![column1, column2]).is_err());
     }
 
     #[test]
@@ -137,7 +138,7 @@ mod test {
         let column2 = super::Column::new("Test2", crate::types::ColumnType::String);
         let columns = vec![column1, column2];
 
-        let mut table = super::Table::new(&columns).unwrap();
+        let mut table = super::Table::new(columns).unwrap();
 
         assert!(table
             .insert(vec![
@@ -159,7 +160,7 @@ mod test {
         let column2 = super::Column::new("Test2", crate::types::ColumnType::String);
         let columns = vec![column1, column2];
 
-        let mut table = super::Table::new(&columns).unwrap();
+        let mut table = super::Table::new(columns).unwrap();
 
         assert!(table
             .insert(vec![
@@ -181,7 +182,7 @@ mod test {
         let column2 = super::Column::new("Test2", crate::types::ColumnType::String);
         let columns = vec![column1, column2];
 
-        let mut table = super::Table::new(&columns).unwrap();
+        let mut table = super::Table::new(columns).unwrap();
 
         assert!(table
             .insert(vec![
@@ -203,7 +204,7 @@ mod test {
         let column2 = super::Column::new("Test2", crate::types::ColumnType::String);
         let columns = vec![column1, column2];
 
-        let mut table = super::Table::new(&columns).unwrap();
+        let mut table = super::Table::new(columns).unwrap();
 
         assert!(table
             .insert(vec![crate::values::Value::Integer(10)])
@@ -223,7 +224,7 @@ mod test {
         let column2 = super::Column::new("Test2", crate::types::ColumnType::String);
         let columns = vec![column1, column2];
 
-        let mut table = super::Table::new(&columns).unwrap();
+        let mut table = super::Table::new(columns).unwrap();
 
         assert!(table
             .insert(vec![
@@ -261,7 +262,7 @@ mod test {
         let column2 = super::Column::new("Test2", crate::types::ColumnType::String);
         let columns = vec![column1, column2];
 
-        let mut table = super::Table::new(&columns).unwrap();
+        let mut table = super::Table::new(columns).unwrap();
 
         assert!(table
             .insert(vec![

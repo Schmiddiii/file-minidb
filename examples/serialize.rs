@@ -6,13 +6,13 @@ use file_minidb::table::Table;
 use file_minidb::types::ColumnType;
 
 fn main() {
-    // """ will be escaped
-    let column1 = Column::key("\"First\" Name", ColumnType::String);
+    // " will be escaped
+    let column1 = Column::key("First Name", ColumnType::String);
     let column2 = Column::key("Last Name", ColumnType::String);
     let column3 = Column::new("Age", ColumnType::Integer);
     let columns = vec![column1, column2, column3];
 
-    let mut table = Table::new(&columns).unwrap();
+    let mut table = Table::new(columns).unwrap();
 
     // Add data
     assert!(table
@@ -32,6 +32,16 @@ fn main() {
         .insert(vec!["Canary".into(), "Robb".into(), 42.into()])
         .is_ok());
 
+    println!("Original table:");
+    println!("{}", table);
+
     println!("Serialized");
-    println!("{}", table.serialize())
+    let serialization = table.serialize();
+    println!("{}", serialization);
+
+    println!("Deserialized");
+    let deserialization = Table::deserialize(serialization);
+    println!("{}", deserialization.clone().unwrap());
+
+    assert!(table == deserialization.unwrap());
 }

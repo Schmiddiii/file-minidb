@@ -10,20 +10,20 @@ pub trait Serializable {
 
 
 // Escapes all "," in the given string
-fn escape(str: String) -> String {
-    str.replace("\"", "\\\"")
+fn escape(str: &str) -> String {
+    String::from(str).replace("\"", "\\\"")
 }
 
 // Will escape the string and surround it with "
 fn escape_and_surround(str: String) -> String {
     let mut result = String::from("\"");
-    result.push_str(&escape(str));
+    result.push_str(&escape(&str));
     result.push('\"'); // " <- for syntax highlighting
 
     result
 }
 
-impl Serializable for Table<'_> {
+impl Serializable for Table {
     fn serialize(&self) -> String {
         let mut result = String::from("");
         result.push_str(&self.columns.serialize());
@@ -56,7 +56,7 @@ impl Serializable for Column {
         result.push(' ');
 
         result.push('"');
-        result.push_str(&escape((*self.name).as_ref().to_string()));
+        result.push_str(&escape(&self.name));
         result.push('"');
 
         result
@@ -74,7 +74,7 @@ impl Serializable for ColumnType {
 
 }
 
-impl Serializable for Vec<Entry<'_>> {
+impl Serializable for Vec<Entry> {
     fn serialize(&self) -> String {
         let mut result = String::from("");
         for e in self {
@@ -87,7 +87,7 @@ impl Serializable for Vec<Entry<'_>> {
 
 }
 
-impl Serializable for Entry<'_> {
+impl Serializable for Entry {
     fn serialize(&self) -> String {
         let mut result = String::from("");
         for (_type, v) in &self.values {

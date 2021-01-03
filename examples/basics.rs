@@ -10,7 +10,7 @@ pub fn main() {
     let column3 = Column::new("Age", ColumnType::Integer);
     let columns = vec![column1, column2, column3];
 
-    let mut table = Table::new(&columns).unwrap();
+    let mut table = Table::new(columns).unwrap();
 
     println!("{}", table);
 

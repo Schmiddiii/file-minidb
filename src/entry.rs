@@ -4,11 +4,11 @@ use crate::values::Value;
 use std::fmt;
 
 #[derive(Clone, PartialEq, Eq, Debug)]
-pub struct Entry<'a> {
-    pub(crate) values: Vec<(&'a Column, Value)>,
+pub struct Entry {
+    pub(crate) values: Vec<(Column, Value)>,
 }
 
-impl<'a> fmt::Display for Entry<'a> {
+impl fmt::Display for Entry {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for v in &self.values {
             write!(f, "| {}\t", v.1).unwrap();
@@ -17,16 +17,16 @@ impl<'a> fmt::Display for Entry<'a> {
     }
 }
 
-impl<'a> Entry<'a> {
-    pub fn new(values: Vec<(&'a Column, Value)>) -> Entry<'a> {
+impl Entry {
+    pub fn new(values: Vec<(Column, Value)>) -> Entry {
         Entry { values: values }
     }
 
-    fn get_key_columns(&self) -> Vec<&'a Column> {
+    fn get_key_columns(&self) -> Vec<Column> {
         self.values
             .iter()
             .filter(|v| v.0.is_key)
-            .map(|v| v.0)
+            .map(|v| v.0.clone())
             .collect()
     }
 
@@ -85,8 +85,8 @@ mod tests {
         let column2 = crate::column::Column::new("C2", crate::types::ColumnType::String);
 
         let entry1_values = vec![
-            (&column1, crate::values::Value::String("Hello".to_owned())),
-            (&column2, crate::values::Value::String("World".to_owned())),
+            (column1, crate::values::Value::String("Hello".to_owned())),
+            (column2, crate::values::Value::String("World".to_owned())),
         ];
         let entry2_values = entry1_values.clone();
 
@@ -102,12 +102,12 @@ mod tests {
         let column2 = crate::column::Column::new("C2", crate::types::ColumnType::String);
 
         let entry1_values = vec![
-            (&column1, crate::values::Value::String("Hello".to_owned())),
-            (&column2, crate::values::Value::String("World".to_owned())),
+            (column1.clone(), crate::values::Value::String("Hello".to_owned())),
+            (column2.clone(), crate::values::Value::String("World".to_owned())),
         ];
         let entry2_values = vec![
-            (&column1, crate::values::Value::String("Hello".to_owned())),
-            (&column2, crate::values::Value::String("Moon".to_owned())),
+            (column1.clone(), crate::values::Value::String("Hello".to_owned())),
+            (column2.clone(), crate::values::Value::String("Moon".to_owned())),
         ];
 
         let entry1 = super::Entry::new(entry1_values);
@@ -123,12 +123,12 @@ mod tests {
         let column3 = crate::column::Column::new("C3", crate::types::ColumnType::Integer);
 
         let entry1_values = vec![
-            (&column1, crate::values::Value::String("Hello".to_owned())),
-            (&column2, crate::values::Value::String("World".to_owned())),
+            (column1.clone(), crate::values::Value::String("Hello".to_owned())),
+            (column2.clone(), crate::values::Value::String("World".to_owned())),
         ];
         let entry2_values = vec![
-            (&column1, crate::values::Value::String("Hello".to_owned())),
-            (&column3, crate::values::Value::Integer(16)),
+            (column1.clone(), crate::values::Value::String("Hello".to_owned())),
+            (column3.clone(), crate::values::Value::Integer(16)),
         ];
 
         let entry1 = super::Entry::new(entry1_values);
@@ -143,12 +143,12 @@ mod tests {
         let column2 = crate::column::Column::new("C2", crate::types::ColumnType::String);
 
         let entry1_values = vec![
-            (&column1, crate::values::Value::String("Hello".to_owned())),
-            (&column2, crate::values::Value::String("World".to_owned())),
+            (column1.clone(), crate::values::Value::String("Hello".to_owned())),
+            (column2.clone(), crate::values::Value::String("World".to_owned())),
         ];
         let entry2_values = vec![
-            (&column1, crate::values::Value::String("Bye".to_owned())),
-            (&column2, crate::values::Value::String("World".to_owned())),
+            (column1.clone(), crate::values::Value::String("Bye".to_owned())),
+            (column2.clone(), crate::values::Value::String("World".to_owned())),
         ];
 
         let entry1 = super::Entry::new(entry1_values);
@@ -163,8 +163,8 @@ mod tests {
         let column2 = crate::column::Column::new("C2", crate::types::ColumnType::String);
 
         let entry_values = vec![
-            (&column1, crate::values::Value::String("Hello".to_owned())),
-            (&column2, crate::values::Value::String("World".to_owned())),
+            (column1.clone(), crate::values::Value::String("Hello".to_owned())),
+            (column2.clone(), crate::values::Value::String("World".to_owned())),
         ];
         let entry = super::Entry::new(entry_values);
 
