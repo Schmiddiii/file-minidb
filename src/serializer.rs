@@ -11,14 +11,14 @@ pub trait Serializable {
 
 // Escapes all "," in the given string
 fn escape(str: &str) -> String {
-    String::from(str).replace("\"", "\\\"")
+    String::from(str).replace(",", "\\,")
 }
 
 // Will escape the string and surround it with "
 fn escape_and_surround(str: String) -> String {
     let mut result = String::from("\"");
     result.push_str(&escape(&str));
-    result.push('\"'); // " <- for syntax highlighting
+    result.push('\"');          // " Fix syntax highlighting
 
     result
 }

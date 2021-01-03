@@ -19,7 +19,7 @@ impl fmt::Display for Entry {
 
 impl Entry {
     pub fn new(values: Vec<(Column, Value)>) -> Entry {
-        Entry { values: values }
+        Entry { values }
     }
 
     fn get_key_columns(&self) -> Vec<Column> {
@@ -29,10 +29,6 @@ impl Entry {
             .map(|v| v.0.clone())
             .collect()
     }
-
-    // fn get_values(&self) -> Vec<Value> {
-    //     self.values.iter().map(|v| v.1.clone()).collect()
-    // }
 
     fn get_key_values(&self) -> Vec<Value> {
         self.values
@@ -73,7 +69,7 @@ impl Entry {
             }
         }
 
-        return true;
+        true
     }
 }
 

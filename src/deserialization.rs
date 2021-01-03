@@ -27,15 +27,15 @@ fn split_to_first_unescaped(str: &str, ch: char) -> Option<(String, String)> {
 // Otherwise the whole string is returned
 fn starts_with_and_remove(str: &str, pattern: &str) -> (bool, String) {
     if str.starts_with(pattern) {
-        return (true, String::from(str.split_at(pattern.len()).1));
+        (true, String::from(str.split_at(pattern.len()).1))
     } else {
-        return (false, str.to_string());
+        (false, str.to_string())
     }
 }
 
 impl Table {
     pub fn deserialize(str: String) -> Result<Self, String> {
-        let mut lines = str.split("\n");
+        let mut lines = str.split('\n');
 
         let first_line = lines.next();
         if first_line.is_none() {
@@ -49,7 +49,7 @@ impl Table {
         let mut next_line = lines.next();
 
         while next_line.is_some() {
-            if next_line.unwrap().len() != 0 {
+            if !next_line.unwrap().is_empty() {
                 let entry_opt = Entry::deserialize_data(next_line.unwrap().to_string(), columns.clone().unwrap().0);
 
                 if entry_opt.is_err() {
@@ -65,7 +65,7 @@ impl Table {
 
         }
 
-        return Ok(table);
+        Ok(table)
     }
 
 }
@@ -73,14 +73,14 @@ impl Table {
 impl Entry {
     fn deserialize_data(str: String, columns: Vec<Column>) -> Result<Self, String> {
         let mut result: Vec<(Column, Value)> = vec![];
-        let mut working_str = str.clone();
+        let mut working_str = str;
         for column in columns {
             let split = split_to_first_unescaped(&working_str, ',');
 
 
             // Last column
             if split.is_none() {
-                if working_str.len() != 0 {
+                if !working_str.is_empty() {
                     working_str.remove(0);
                     working_str.remove(working_str.len() - 1);
                 }
@@ -99,6 +99,7 @@ impl Entry {
 
                 first_mut.remove(0);
                 first_mut.remove(first_mut.len() - 1);
+                first_mut = first_mut.replace("\\,", ",");
 
                 let value = Entry::deserialize_value(first_mut, column.get_type());
 
@@ -123,9 +124,9 @@ impl Entry {
             ColumnType::Integer => {
                 let value = str.parse::<i32>();
                 if value.is_err() {
-                    return Err("Cannot parse integer".to_string());
+                    Err("Cannot parse integer".to_string())
                 } else {
-                    return Ok(Value::Integer(value.unwrap()));
+                    Ok(Value::Integer(value.unwrap()))
                 }
 
             }
@@ -139,7 +140,7 @@ impl Column {
         let mut rest = str;
         let mut result = vec![];
         while rest != "" {
-            if rest.starts_with(",") {
+            if rest.starts_with(',') {
                 rest = rest.split_off(1);
             }
             let next = Column::deserialize(rest);
@@ -152,7 +153,7 @@ impl Column {
             rest = r;
         }
 
-        return Ok((result, rest));
+        Ok((result, rest))
     }
 
     pub fn deserialize(str: String) -> Result<(Self, String), String> {
@@ -160,7 +161,7 @@ impl Column {
         let mut rest = str.clone();
         if let (true, r) = starts_with_and_remove(&str, "key ") {
             is_key = true;
-            rest = r.to_string();
+            rest = r;
         }
 
         let column_type_result = ColumnType::deserialize(rest);
@@ -180,36 +181,31 @@ impl Column {
 
        let (name, rest) = name_option.unwrap();
 
-       let mut rest_mut = rest.clone();
+       let mut rest_mut = rest;
        rest_mut.remove(0); // Remove leading "
 
-       return Ok((Column {
-           is_key: is_key,
-           name: name,
-           column_type: column_type
-       }, rest_mut));
+       let name_unescaped = name.replace("\\,", ",");       // Unescape the name.
+
+       Ok((Column {
+           is_key,
+           name: name_unescaped,
+           column_type
+       }, rest_mut))
     }
 }
 
 impl ColumnType {
     pub fn deserialize(str: String) -> Result<(Self, String), String> {
-        // match str {
-        //     "int" => Ok(ColumnType::Integer),
-        //     "str" => Ok(ColumnType::String),
-        //     _ => Err("Unknown column type".to_string())
-
-        // }
-        // Ok((ColumnType::Integer, str))
         let mut rest;
         if let (true, r) = starts_with_and_remove(&str, &ColumnType::Integer.serialize()) {
-            rest = r.clone();
+            rest = r;
             rest.remove(0); // Remove leading space
-            return Ok((ColumnType::Integer, rest.to_string()));
+            return Ok((ColumnType::Integer, rest));
         }
         if let (true, r) = starts_with_and_remove(&str, &ColumnType::String.serialize()) {
-            rest = r.clone();
+            rest = r;
             rest.remove(0);
-            return Ok((ColumnType::String, rest.to_string()));
+            return Ok((ColumnType::String, rest));
         }
 
         Err("Unknown column type".to_string())

@@ -11,15 +11,6 @@ pub struct Table {
     pub(crate) entries: Vec<Entry>,
 }
 
-// impl<'a> fmt::Debug for Table<'a> {
-//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//         f.debug_struct("Table")
-//          .field("columns", &(*self.columns).as_ref())
-//          .field("entries", &self.entries)
-//          .finish()
-//     }
-// }
-
 impl fmt::Display for Table {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for c in &self.columns {
@@ -30,7 +21,7 @@ impl fmt::Display for Table {
             writeln!(f, "{}", e).unwrap();
         }
 
-        writeln!(f, "")
+        writeln!(f)
     }
 }
 
@@ -48,7 +39,7 @@ impl Table {
         }
 
         Ok(Table {
-            columns: columns,
+            columns,
             entries: vec![],
         })
     }
@@ -96,7 +87,7 @@ impl Table {
 
     pub fn remove(&mut self, keys: Vec<Value>) -> bool {
         let key_columns = self.columns.iter().cloned().filter(|c| c.is_key);
-        if keys.len() != key_columns.clone().collect::<Vec<Column>>().len() {
+        if keys.len() != key_columns.clone().count() {
             return false;
         }
         let ziped = key_columns.zip(keys.into_iter());
@@ -109,7 +100,7 @@ impl Table {
             .filter(|entry| !entry.key_eq(&to_remove))
             .collect();
 
-        return old_entries != self.entries;
+        old_entries != self.entries
     }
 }
 

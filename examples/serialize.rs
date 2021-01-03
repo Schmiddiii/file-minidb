@@ -6,8 +6,7 @@ use file_minidb::table::Table;
 use file_minidb::types::ColumnType;
 
 fn main() {
-    // " will be escaped
-    let column1 = Column::key("First Name", ColumnType::String);
+    let column1 = Column::key("First, Name", ColumnType::String);
     let column2 = Column::key("Last Name", ColumnType::String);
     let column3 = Column::new("Age", ColumnType::Integer);
     let columns = vec![column1, column2, column3];
@@ -20,7 +19,7 @@ fn main() {
         .is_ok());
 
     assert!(table
-        .insert(vec!["Alf".into(), "Mason".into(), 25.into()])
+        .insert(vec!["Alf".into(), "Ma,son".into(), 25.into()])
         .is_ok());
     assert!(table
         .insert(vec!["Robert".into(), "Mullins".into(), 35.into()])
