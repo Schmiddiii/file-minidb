@@ -1,9 +1,13 @@
 use crate::column::Column;
 use crate::entry::Entry;
 use crate::values::Value;
+use crate::serializer::Serializable;
 
 use std::collections::HashSet;
 use std::fmt;
+use std::path::Path;
+use std::io::Write;
+use std::fs::OpenOptions;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Table {
@@ -42,6 +46,36 @@ impl Table {
             columns,
             entries: vec![],
         })
+    }
+
+    /// Load table from file.
+    pub fn from_file(path: &Path) -> Result<Table, String> {
+        let file_content = std::fs::read_to_string(path);
+
+        if file_content.is_err() {
+            Err(file_content.err().unwrap().to_string())
+        } else {
+            Table::deserialize(file_content.unwrap())
+        }
+    }
+
+    /// Write contents of the table to a file.
+    /// Will overwrite the file.
+    pub fn write_file(&self, path: &Path) -> Result<(), String> {
+        let file = OpenOptions::new()
+                    .read(false)
+                    .write(true)
+                    .create(true)
+                    .open(path);
+
+        if file.is_err() {
+            Err(file.err().unwrap().to_string())
+        } else {
+            let serialized = self.serialize();
+            write!(&mut file.unwrap(), "{}", serialized).unwrap();
+
+            Ok(())
+        }
     }
 
     pub fn insert(&mut self, entry: Vec<Value>) -> Result<(), String> {

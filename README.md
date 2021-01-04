@@ -14,6 +14,5 @@ This is not and never will be a fully fleshed out and high speed database and sh
 
 # What it can not do yet
 - Do basic database operations (join, selection, projection)
-- Write and read from a file
 
-Because these are not implemented yet (mainly the read and write from file), this program can not be used in a productive way.
+Because these are not implemented yet, this program should not be used in a productive way.

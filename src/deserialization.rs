@@ -136,7 +136,7 @@ impl Entry {
 }
 
 impl Column {
-    pub fn deserialize_columns(str: String) -> Result<(Vec<Self>, String), String> {
+    fn deserialize_columns(str: String) -> Result<(Vec<Self>, String), String> {
         let mut rest = str;
         let mut result = vec![];
         while rest != "" {
@@ -156,7 +156,7 @@ impl Column {
         Ok((result, rest))
     }
 
-    pub fn deserialize(str: String) -> Result<(Self, String), String> {
+    fn deserialize(str: String) -> Result<(Self, String), String> {
         let mut is_key = false;
         let mut rest = str.clone();
         if let (true, r) = starts_with_and_remove(&str, "key ") {
@@ -195,7 +195,7 @@ impl Column {
 }
 
 impl ColumnType {
-    pub fn deserialize(str: String) -> Result<(Self, String), String> {
+    fn deserialize(str: String) -> Result<(Self, String), String> {
         let mut rest;
         if let (true, r) = starts_with_and_remove(&str, &ColumnType::Integer.serialize()) {
             rest = r;
