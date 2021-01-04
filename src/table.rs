@@ -78,6 +78,14 @@ impl Table {
         }
     }
 
+    /// Gets the data saved in the table.
+    pub fn get_entries(&self) -> Vec<Entry> {
+        self.entries.clone()
+    }
+
+    /// Insert data into the table.
+    /// The types of the data must be equal to the data in the table.
+    /// Furthermore, the keys must not already exist in the table
     pub fn insert(&mut self, entry: Vec<Value>) -> Result<(), String> {
         // Check if all columns are given
         if entry.len() != self.columns.len() {

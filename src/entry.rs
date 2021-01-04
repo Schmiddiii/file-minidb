@@ -38,6 +38,14 @@ impl Entry {
             .collect()
     }
 
+    /// Get saved data of this entry.
+    pub fn get_values(&self) -> Vec<Value> {
+        self.values
+            .iter()
+            .map(|v| v.1.clone())
+            .collect()
+    }
+
     /// Two values are key equivalent if
     ///     - All (not just key) columns must be equivalent
     ///     - All values from key columns must be equivalent
