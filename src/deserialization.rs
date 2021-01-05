@@ -83,6 +83,7 @@ impl Entry {
                 if !working_str.is_empty() {
                     working_str.remove(0);
                     working_str.remove(working_str.len() - 1);
+                    working_str = working_str.replace("\\,", ",");
                 }
                 let value = Entry::deserialize_value(working_str, column.get_type());
 
@@ -210,5 +211,76 @@ impl ColumnType {
 
         Err("Unknown column type".to_string())
     }
+}
+
+#[cfg(test)]
+mod test {
+
+    use crate::serializer::Serializable;
+
+    fn create_test_table() -> super::Table {
+        let column1 = super::Column::key("C1", crate::types::ColumnType::Integer);
+        let column2 = super::Column::new("C2", crate::types::ColumnType::String);
+        let columns = vec![column1, column2];
+
+        return super::Table::new(columns).unwrap();
+    }
+
+    fn create_test_table_with_comma() -> super::Table {
+        let column1 = super::Column::key("C,1", crate::types::ColumnType::Integer);
+        let column2 = super::Column::new("C2,", crate::types::ColumnType::String);
+        let columns = vec![column1, column2];
+
+        return super::Table::new(columns).unwrap();
+    }
+
+    fn deserialization_equal(table: super::Table) -> bool {
+        let serialized = table.serialize();
+
+        let deserialized = super::Table::deserialize(serialized);
+
+        if deserialized.is_err() {
+            return false;
+        }
+
+        table == deserialized.unwrap()
+
+    }
+
+    #[test]
+    fn deserialize_no_data() {
+        let table = create_test_table();
+
+        assert!(deserialization_equal(table));
+    }
+
+    #[test]
+    fn deserialize_data() {
+        let mut table = create_test_table();
+
+        table.insert(vec![10.into(), "Hello".into()]).unwrap();
+        table.insert(vec![20.into(), "World".into()]).unwrap();
+
+        assert!(deserialization_equal(table));
+
+    }
+
+    #[test]
+    fn deserialize_with_comma_no_data() {
+        let table = create_test_table_with_comma();
+
+        assert!(deserialization_equal(table));
+    }
+
+    #[test]
+    fn deserialize_with_comma_data() {
+        let mut table = create_test_table_with_comma();
+
+        table.insert(vec![10.into(), "He,llo".into()]).unwrap();
+        table.insert(vec![20.into(), "Wor,ld".into()]).unwrap();
+
+        assert!(deserialization_equal(table));
+    }
+
 }
 

@@ -108,3 +108,75 @@ impl Serializable for Value {
     }
 
 }
+
+#[cfg(test)]
+mod test {
+
+    use crate::serializer::Serializable;
+
+    fn create_test_table() -> super::Table {
+        let column1 = super::Column::key("C1", crate::types::ColumnType::Integer);
+        let column2 = super::Column::new("C2", crate::types::ColumnType::String);
+        let columns = vec![column1, column2];
+
+        return super::Table::new(columns).unwrap();
+    }
+
+    fn create_test_table_with_comma() -> super::Table {
+        let column1 = super::Column::key("C,1", crate::types::ColumnType::Integer);
+        let column2 = super::Column::new("C2,", crate::types::ColumnType::String);
+        let columns = vec![column1, column2];
+
+        return super::Table::new(columns).unwrap();
+    }
+
+    #[test]
+    fn serialize_no_data() {
+        let table = create_test_table();
+
+        let serialized = r#"key int "C1",str "C2""#.to_owned() + "\n";
+
+        assert!(table.serialize() == serialized);
+    }
+
+    #[test]
+    fn serialize_data() {
+        let mut table = create_test_table();
+
+        table.insert(vec![10.into(), "Hello".into()]).unwrap();
+        table.insert(vec![20.into(), "World".into()]).unwrap();
+
+        let serialized = r#"key int "C1",str "C2"
+"10","Hello"
+"20","World"
+"#;
+
+        assert!(table.serialize() == serialized);
+    }
+
+    #[test]
+    fn serialize_with_comma_no_data() {
+        let table = create_test_table_with_comma();
+
+        let serialized = r#"key int "C\,1",str "C2\,""#.to_owned() + "\n";
+
+        assert!(table.serialize() == serialized);
+    }
+
+    #[test]
+    fn serialize_with_comma_data() {
+        let mut table = create_test_table_with_comma();
+
+        table.insert(vec![10.into(), "H,ello".into()]).unwrap();
+        table.insert(vec![20.into(), "Wor,ld".into()]).unwrap();
+
+        let serialized = r#"key int "C\,1",str "C2\,"
+"10","H\,ello"
+"20","Wor\,ld"
+"#;
+
+        assert!(table.serialize() == serialized);
+    }
+
+
+}
