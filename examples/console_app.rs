@@ -7,7 +7,7 @@ use file_minidb::types::ColumnType;
 use std::io::{self, BufRead};
 
 pub fn main() {
-    let name_column = Column::key("Name", ColumnType::String);
+    let name_column = Column::new("Name", ColumnType::String);
     let age_column = Column::new("Age", ColumnType::Integer);
 
     let mut table = Table::new(vec![name_column, age_column]).unwrap();

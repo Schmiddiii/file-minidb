@@ -34,6 +34,8 @@ fn starts_with_and_remove(str: &str, pattern: &str) -> (bool, String) {
 }
 
 impl Table {
+    /// Deserialize a table from the given string.
+    /// If the string does not represent a table, a error will be returned.
     pub fn deserialize(str: String) -> Result<Self, String> {
         let mut lines = str.split('\n');
 

@@ -1,8 +1,9 @@
 use crate::types::ColumnType;
 
 use std::fmt;
+use std::convert::TryFrom;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Value {
     String(String),
     Integer(i32),
@@ -42,4 +43,29 @@ impl From<i32> for Value {
     fn from(v: i32) -> Self {
         Value::Integer(v)
     }
+}
+
+impl TryFrom<Value> for i32 {
+    type Error = &'static str;
+
+    fn try_from(value: Value) -> Result<Self, Self::Error> {
+        if let Value::Integer(i) = value {
+            return Ok(i);
+        } else {
+            return Err("Cannot convert from String");
+        }
+    }
+}
+
+impl TryFrom<Value> for String {
+    type Error = &'static str;
+
+    fn try_from(value: Value) -> Result<Self, Self::Error> {
+        if let Value::String(str) = value {
+            return Ok(str);
+        } else {
+            return Err("Cannot convert from Integer");
+        }
+    }
+
 }
