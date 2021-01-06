@@ -1,7 +1,7 @@
 extern crate file_minidb;
 
-use file_minidb::serializer::Serializable;
 use file_minidb::column::Column;
+use file_minidb::serializer::Serializable;
 use file_minidb::table::Table;
 use file_minidb::types::ColumnType;
 

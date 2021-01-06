@@ -1,13 +1,12 @@
 use crate::column::Column;
+use crate::entry::Entry;
 use crate::table::Table;
 use crate::types::ColumnType;
-use crate::entry::Entry;
 use crate::values::Value;
 
 pub trait Serializable {
     fn serialize(&self) -> String;
 }
-
 
 // Escapes all "," in the given string
 fn escape(str: &str) -> String {
@@ -18,7 +17,7 @@ fn escape(str: &str) -> String {
 fn escape_and_surround(str: String) -> String {
     let mut result = String::from("\"");
     result.push_str(&escape(&str));
-    result.push('\"');          // " Fix syntax highlighting
+    result.push('\"'); // " Fix syntax highlighting
 
     result
 }
@@ -60,7 +59,6 @@ impl Serializable for Column {
         result.push('"');
 
         result
-
     }
 }
 
@@ -71,7 +69,6 @@ impl Serializable for ColumnType {
             ColumnType::String => "str".to_string(),
         }
     }
-
 }
 
 impl Serializable for Vec<Entry> {
@@ -84,7 +81,6 @@ impl Serializable for Vec<Entry> {
 
         result
     }
-
 }
 
 impl Serializable for Entry {
@@ -103,10 +99,9 @@ impl Serializable for Value {
     fn serialize(&self) -> String {
         match self {
             Value::String(s) => escape_and_surround(s.clone()),
-            Value::Integer(i) => escape_and_surround(i.clone().to_string())
+            Value::Integer(i) => escape_and_surround(i.clone().to_string()),
         }
     }
-
 }
 
 #[cfg(test)]
@@ -177,6 +172,4 @@ mod test {
 
         assert!(table.serialize() == serialized);
     }
-
-
 }

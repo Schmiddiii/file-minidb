@@ -1,8 +1,8 @@
 use crate::column::Column;
+use crate::entry::Entry;
+use crate::serializer::Serializable;
 use crate::table::Table;
 use crate::types::ColumnType;
-use crate::serializer::Serializable;
-use crate::entry::Entry;
 use crate::values::Value;
 
 // The entire file needs major refactoring.
@@ -52,24 +52,27 @@ impl Table {
 
         while next_line.is_some() {
             if !next_line.unwrap().is_empty() {
-                let entry_opt = Entry::deserialize_data(next_line.unwrap().to_string(), columns.clone().unwrap().0);
+                let entry_opt = Entry::deserialize_data(
+                    next_line.unwrap().to_string(),
+                    columns.clone().unwrap().0,
+                );
 
-                if entry_opt.is_err() {
-                    return Err(entry_opt.err().unwrap());
+                if let Ok(entry) = entry_opt {
+                    table
+                        .insert(entry.values.iter().map(|(_, v)| v.clone()).collect())
+                        .unwrap();
                 } else {
-                    table.insert(entry_opt.unwrap().values.iter().map(|(_,v)| v.clone()).collect()).unwrap();
+                    return Err(entry_opt.err().unwrap());
                 }
 
                 next_line = lines.next()
             } else {
                 break;
             }
-
         }
 
         Ok(table)
     }
-
 }
 
 impl Entry {
@@ -79,24 +82,9 @@ impl Entry {
         for column in columns {
             let split = split_to_first_unescaped(&working_str, ',');
 
-
             // Last column
-            if split.is_none() {
-                if !working_str.is_empty() {
-                    working_str.remove(0);
-                    working_str.remove(working_str.len() - 1);
-                    working_str = working_str.replace("\\,", ",");
-                }
-                let value = Entry::deserialize_value(working_str, column.get_type());
-
-                if value.is_err() {
-                    return Err(value.err().unwrap());
-                } else {
-                    result.push((column, value.unwrap()));
-                    return Ok(Entry::new(result));
-                }
-            } else {
-                let (first, rest) = split.unwrap();
+            if let Some(split_ok) = split {
+                let (first, rest) = split_ok;
 
                 let mut first_mut = first.clone();
 
@@ -104,37 +92,48 @@ impl Entry {
                 first_mut.remove(first_mut.len() - 1);
                 first_mut = first_mut.replace("\\,", ",");
 
-                let value = Entry::deserialize_value(first_mut, column.get_type());
+                let value_res = Entry::deserialize_value(first_mut, column.get_type());
 
-                if value.is_err() {
-                    return Err(value.err().unwrap());
+                if let Ok(value) = value_res {
+                    result.push((column, value));
                 } else {
-                    result.push((column, value.unwrap()));
+                    return Err(value_res.err().unwrap());
                 }
 
                 working_str = rest;
                 working_str.remove(0);
-            }
+            } else {
+                if !working_str.is_empty() {
+                    working_str.remove(0);
+                    working_str.remove(working_str.len() - 1);
+                    working_str = working_str.replace("\\,", ",");
+                }
+                let value_res = Entry::deserialize_value(working_str, column.get_type());
 
+                if let Ok(value) = value_res {
+                    result.push((column, value));
+                    return Ok(Entry::new(result));
+                } else {
+                    return Err(value_res.err().unwrap());
+                }
+            }
         }
 
         Err("Cannot deserialize data".to_string())
     }
 
     fn deserialize_value(str: String, column_type: ColumnType) -> Result<Value, String> {
-        match column_type{
+        match column_type {
             ColumnType::String => Ok(Value::String(str)),
             ColumnType::Integer => {
-                let value = str.parse::<i32>();
-                if value.is_err() {
-                    Err("Cannot parse integer".to_string())
+                let value_res = str.parse::<i32>();
+                if let Ok(value) = value_res {
+                    Ok(Value::Integer(value))
                 } else {
-                    Ok(Value::Integer(value.unwrap()))
+                    Err("Cannot parse integer".to_string())
                 }
-
             }
         }
-
     }
 }
 
@@ -174,26 +173,29 @@ impl Column {
 
         let (column_type, rest) = column_type_result.unwrap();
 
-       let (_, rest) = starts_with_and_remove(&rest, "\"");
+        let (_, rest) = starts_with_and_remove(&rest, "\"");
 
-       let name_option = split_to_first_unescaped(&rest, '\"');           // "
+        let name_option = split_to_first_unescaped(&rest, '\"'); // "
 
-       if name_option.is_none() {
-           return Err("Cannot find a name for the column".to_owned());
-       }
+        if name_option.is_none() {
+            return Err("Cannot find a name for the column".to_owned());
+        }
 
-       let (name, rest) = name_option.unwrap();
+        let (name, rest) = name_option.unwrap();
 
-       let mut rest_mut = rest;
-       rest_mut.remove(0); // Remove leading "
+        let mut rest_mut = rest;
+        rest_mut.remove(0); // Remove leading "
 
-       let name_unescaped = name.replace("\\,", ",");       // Unescape the name.
+        let name_unescaped = name.replace("\\,", ","); // Unescape the name.
 
-       Ok((Column {
-           is_key,
-           name: name_unescaped,
-           column_type
-       }, rest_mut))
+        Ok((
+            Column {
+                is_key,
+                name: name_unescaped,
+                column_type,
+            },
+            rest_mut,
+        ))
     }
 }
 
@@ -246,7 +248,6 @@ mod test {
         }
 
         table == deserialized.unwrap()
-
     }
 
     #[test]
@@ -264,7 +265,6 @@ mod test {
         table.insert(vec![20.into(), "World".into()]).unwrap();
 
         assert!(deserialization_equal(table));
-
     }
 
     #[test]
@@ -283,6 +283,4 @@ mod test {
 
         assert!(deserialization_equal(table));
     }
-
 }
-

@@ -1,7 +1,7 @@
 use crate::types::ColumnType;
 
-use std::fmt;
 use std::convert::TryFrom;
+use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Value {
@@ -22,7 +22,7 @@ impl Value {
     pub fn get_type(&self) -> ColumnType {
         match &self {
             Value::String(_) => ColumnType::String,
-            Value::Integer(_) => ColumnType::Integer, 
+            Value::Integer(_) => ColumnType::Integer,
         }
     }
 }
@@ -50,9 +50,9 @@ impl TryFrom<Value> for i32 {
 
     fn try_from(value: Value) -> Result<Self, Self::Error> {
         if let Value::Integer(i) = value {
-            return Ok(i);
+            Ok(i)
         } else {
-            return Err("Cannot convert from String");
+            Err("Cannot convert from String")
         }
     }
 }
@@ -62,10 +62,9 @@ impl TryFrom<Value> for String {
 
     fn try_from(value: Value) -> Result<Self, Self::Error> {
         if let Value::String(str) = value {
-            return Ok(str);
+            Ok(str)
         } else {
-            return Err("Cannot convert from Integer");
+            Err("Cannot convert from Integer")
         }
     }
-
 }

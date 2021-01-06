@@ -9,7 +9,6 @@ use std::path::Path;
 const FILE: &str = "examples/example_data";
 
 fn main() {
-
     let original_table = create_table();
 
     println!("Original table:");

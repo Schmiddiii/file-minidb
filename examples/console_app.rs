@@ -1,7 +1,7 @@
 extern crate file_minidb;
 
-use file_minidb::table::Table;
 use file_minidb::column::Column;
+use file_minidb::table::Table;
 use file_minidb::types::ColumnType;
 
 use std::io::{self, BufRead};
@@ -38,10 +38,13 @@ pub fn main() {
                     for entry in entries {
                         let values = entry.get_values();
 
-                        println!("{} is {} years old.", values.get(0).unwrap(), values.get(1).unwrap());
+                        println!(
+                            "{} is {} years old.",
+                            values.get(0).unwrap(),
+                            values.get(1).unwrap()
+                        );
                     }
                 }
-
             } else {
                 println!("Cannot parse a number from the second argument");
             }
@@ -50,5 +53,4 @@ pub fn main() {
         println!("");
         println!("Please input name and age.");
     }
-
 }

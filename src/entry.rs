@@ -1,8 +1,8 @@
 use crate::column::Column;
 use crate::values::Value;
 
-use std::fmt;
 use std::collections::HashSet;
+use std::fmt;
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Entry {
@@ -41,10 +41,7 @@ impl Entry {
 
     /// Get saved data of this entry.
     pub fn get_values(&self) -> Vec<Value> {
-        self.values
-            .iter()
-            .map(|v| v.1.clone())
-            .collect()
+        self.values.iter().map(|v| v.1.clone()).collect()
     }
 
     /// Two entries are key equivalent if
@@ -91,8 +88,8 @@ impl Entry {
 
     /// Returns the values of this entry in the given order.
     /// Will error if the given columns is not a subset of the columns of this entry.
-    pub fn get_values_in_order(&self, columns: &Vec<Column>) -> Result<Vec<Value>, String> {
-        let current_columns: HashSet<_> = self.values.iter().map(|(c,_)| c).cloned().collect();
+    pub fn get_values_in_order(&self, columns: &[Column]) -> Result<Vec<Value>, String> {
+        let current_columns: HashSet<_> = self.values.iter().map(|(c, _)| c).cloned().collect();
         let new_columns: HashSet<_> = columns.iter().cloned().collect();
 
         if !new_columns.is_subset(&current_columns) {
@@ -137,12 +134,24 @@ mod tests {
         let column2 = crate::column::Column::new("C2", crate::types::ColumnType::String);
 
         let entry1_values = vec![
-            (column1.clone(), crate::values::Value::String("Hello".to_owned())),
-            (column2.clone(), crate::values::Value::String("World".to_owned())),
+            (
+                column1.clone(),
+                crate::values::Value::String("Hello".to_owned()),
+            ),
+            (
+                column2.clone(),
+                crate::values::Value::String("World".to_owned()),
+            ),
         ];
         let entry2_values = vec![
-            (column1.clone(), crate::values::Value::String("Hello".to_owned())),
-            (column2.clone(), crate::values::Value::String("Moon".to_owned())),
+            (
+                column1.clone(),
+                crate::values::Value::String("Hello".to_owned()),
+            ),
+            (
+                column2.clone(),
+                crate::values::Value::String("Moon".to_owned()),
+            ),
         ];
 
         let entry1 = super::Entry::new(entry1_values);
@@ -157,12 +166,24 @@ mod tests {
         let column2 = crate::column::Column::new("C2", crate::types::ColumnType::String);
 
         let entry1_values = vec![
-            (column1.clone(), crate::values::Value::String("Hello".to_owned())),
-            (column2.clone(), crate::values::Value::String("World".to_owned())),
+            (
+                column1.clone(),
+                crate::values::Value::String("Hello".to_owned()),
+            ),
+            (
+                column2.clone(),
+                crate::values::Value::String("World".to_owned()),
+            ),
         ];
         let entry2_values = vec![
-            (column1.clone(), crate::values::Value::String("Hello".to_owned())),
-            (column2.clone(), crate::values::Value::String("World".to_owned())),
+            (
+                column1.clone(),
+                crate::values::Value::String("Hello".to_owned()),
+            ),
+            (
+                column2.clone(),
+                crate::values::Value::String("World".to_owned()),
+            ),
         ];
 
         let entry1 = super::Entry::new(entry1_values);
@@ -171,7 +192,6 @@ mod tests {
         assert!(!entry1.key_eq(&entry2));
     }
 
-
     #[test]
     fn different_columns_entries_are_not_key_equivalent() {
         let column1 = crate::column::Column::key("C1", crate::types::ColumnType::String);
@@ -179,11 +199,20 @@ mod tests {
         let column3 = crate::column::Column::new("C3", crate::types::ColumnType::Integer);
 
         let entry1_values = vec![
-            (column1.clone(), crate::values::Value::String("Hello".to_owned())),
-            (column2.clone(), crate::values::Value::String("World".to_owned())),
+            (
+                column1.clone(),
+                crate::values::Value::String("Hello".to_owned()),
+            ),
+            (
+                column2.clone(),
+                crate::values::Value::String("World".to_owned()),
+            ),
         ];
         let entry2_values = vec![
-            (column1.clone(), crate::values::Value::String("Hello".to_owned())),
+            (
+                column1.clone(),
+                crate::values::Value::String("Hello".to_owned()),
+            ),
             (column3.clone(), crate::values::Value::Integer(16)),
         ];
 
@@ -199,12 +228,24 @@ mod tests {
         let column2 = crate::column::Column::new("C2", crate::types::ColumnType::String);
 
         let entry1_values = vec![
-            (column1.clone(), crate::values::Value::String("Hello".to_owned())),
-            (column2.clone(), crate::values::Value::String("World".to_owned())),
+            (
+                column1.clone(),
+                crate::values::Value::String("Hello".to_owned()),
+            ),
+            (
+                column2.clone(),
+                crate::values::Value::String("World".to_owned()),
+            ),
         ];
         let entry2_values = vec![
-            (column1.clone(), crate::values::Value::String("Bye".to_owned())),
-            (column2.clone(), crate::values::Value::String("World".to_owned())),
+            (
+                column1.clone(),
+                crate::values::Value::String("Bye".to_owned()),
+            ),
+            (
+                column2.clone(),
+                crate::values::Value::String("World".to_owned()),
+            ),
         ];
 
         let entry1 = super::Entry::new(entry1_values);
@@ -219,8 +260,14 @@ mod tests {
         let column2 = crate::column::Column::new("C2", crate::types::ColumnType::String);
 
         let entry_values = vec![
-            (column1.clone(), crate::values::Value::String("Hello".to_owned())),
-            (column2.clone(), crate::values::Value::String("World".to_owned())),
+            (
+                column1.clone(),
+                crate::values::Value::String("Hello".to_owned()),
+            ),
+            (
+                column2.clone(),
+                crate::values::Value::String("World".to_owned()),
+            ),
         ];
         let entry = super::Entry::new(entry_values);
 
@@ -236,14 +283,17 @@ mod tests {
         let column2 = crate::column::Column::new("C2", crate::types::ColumnType::String);
 
         let entry_values = vec![
-            (column1.clone(), crate::values::Value::String("Hello".to_owned())),
-            (column2.clone(), crate::values::Value::String("World".to_owned())),
+            (
+                column1.clone(),
+                crate::values::Value::String("Hello".to_owned()),
+            ),
+            (
+                column2.clone(),
+                crate::values::Value::String("World".to_owned()),
+            ),
         ];
         let entry = super::Entry::new(entry_values);
 
-        assert_eq!(
-            entry.get_key_values(),
-            vec![]
-        )
+        assert_eq!(entry.get_key_values(), vec![])
     }
 }

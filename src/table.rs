@@ -1,14 +1,13 @@
 use crate::column::Column;
 use crate::entry::Entry;
-use crate::values::Value;
 use crate::serializer::Serializable;
+use crate::values::Value;
 
 use std::collections::HashSet;
 use std::fmt;
-use std::path::Path;
-use std::io::Write;
 use std::fs::OpenOptions;
-
+use std::io::Write;
+use std::path::Path;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Table {
@@ -35,11 +34,7 @@ impl Table {
     pub fn new(columns: Vec<Column>) -> Result<Table, String> {
         let mut names = HashSet::new();
 
-        if columns
-            .iter()
-            .map(|v| names.insert(&v.name))
-            .any(|v| !v)
-        {
+        if columns.iter().map(|v| names.insert(&v.name)).any(|v| !v) {
             return Err("At least two columns have the same name".to_string());
         }
 
@@ -64,10 +59,10 @@ impl Table {
     /// Will overwrite the file.
     pub fn write_file(&self, path: &Path) -> Result<(), String> {
         let file = OpenOptions::new()
-                    .read(false)
-                    .write(true)
-                    .create(true)
-                    .open(path);
+            .read(false)
+            .write(true)
+            .create(true)
+            .open(path);
 
         if file.is_err() {
             Err(file.err().unwrap().to_string())
@@ -152,7 +147,7 @@ impl Table {
     /// Project, which columns in the table to keep.
     /// Will return a clone of the current table and keep the current table
     /// unmodified.
-    pub fn project(&self, columns: &Vec<Column>) -> Result<Table, String> {
+    pub fn project(&self, columns: Vec<Column>) -> Result<Table, String> {
         let current_columns: HashSet<_> = self.columns.iter().cloned().collect();
         let new_columns: HashSet<_> = columns.iter().cloned().collect();
 
@@ -164,7 +159,7 @@ impl Table {
 
         for entry in &self.entries {
             // Ignore errors as a non-key column might have duplicates.
-            let _ = new_table.insert(entry.get_values_in_order(columns).unwrap());
+            let _ = new_table.insert(entry.get_values_in_order(&columns).unwrap());
         }
 
         Ok(new_table)
@@ -365,23 +360,30 @@ mod test {
             ])
             .is_ok());
 
-       let table_sub1_opt = table.project(&vec![column1]);
-       let table_sub2_opt = table.project(&vec![column2]);
+        let table_sub1_opt = table.project(vec![column1]);
+        let table_sub2_opt = table.project(vec![column2]);
 
-       assert!(table_sub1_opt.is_ok());
-       assert!(table_sub2_opt.is_ok());
+        assert!(table_sub1_opt.is_ok());
+        assert!(table_sub2_opt.is_ok());
 
-       let table_sub1 = table_sub1_opt.unwrap();
-       let table_sub2 = table_sub2_opt.unwrap();
+        let table_sub1 = table_sub1_opt.unwrap();
+        let table_sub2 = table_sub2_opt.unwrap();
 
-       let table_sub1_values: Vec<i32> = table_sub1.get_entries().iter().map(|e| i32::try_from(e.get_values().get(0).unwrap().clone()).unwrap()).collect();
-       let table_sub2_values: Vec<String> = table_sub2.get_entries().iter().map(|e| String::try_from(e.get_values().get(0).unwrap().clone()).unwrap()).collect();
+        let table_sub1_values: Vec<i32> = table_sub1
+            .get_entries()
+            .iter()
+            .map(|e| i32::try_from(e.get_values().get(0).unwrap().clone()).unwrap())
+            .collect();
+        let table_sub2_values: Vec<String> = table_sub2
+            .get_entries()
+            .iter()
+            .map(|e| String::try_from(e.get_values().get(0).unwrap().clone()).unwrap())
+            .collect();
 
-       println!("{}", table);
-       println!("{:?}", table_sub2_values);
+        println!("{}", table);
+        println!("{:?}", table_sub2_values);
 
-       assert!(table_sub1_values == vec![10, 12]);
-       assert!(table_sub2_values == vec!["Hello".to_string(), "World".to_string()]);
-
+        assert!(table_sub1_values == vec![10, 12]);
+        assert!(table_sub2_values == vec!["Hello".to_string(), "World".to_string()]);
     }
 }
