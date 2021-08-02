@@ -1,3 +1,6 @@
+**This repository is archived because of a lack of interest**
+
+
 # file-minidb
 A very minimal database stored in a file. Written in Rust
 
